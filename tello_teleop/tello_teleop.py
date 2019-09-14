@@ -68,9 +68,9 @@ def on_release(key):
 
     tello.set_velocities(vy,vx,vz,rot)
     
-
+print(tello.get_battery())
 tello.takeoff()
-time.sleep(6)
+#time.sleep(6)
 
 # Collect events until released
 listener = keyboard.Listener(

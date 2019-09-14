@@ -1,0 +1,11 @@
+Keras
+numpy
+six
+matplotlib
+tensorflow_gpu
+opencv_python
+Pillow
+PyQt5
+protobuf
+h5py
+imageio
