@@ -2,10 +2,12 @@ Keras
 numpy
 six
 matplotlib
-tensorflow_gpu
+tensorflow_gpu==1.14
 opencv_python
 Pillow
 PyQt5
 protobuf
 h5py
 imageio
+cprint
+config-with-yaml

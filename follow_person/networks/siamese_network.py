@@ -17,15 +17,15 @@ class SiameseNetwork:
         with tf.device('/cpu:0'):
             siamese_graph = tf.Graph()
             with siamese_graph.as_default():
-                graph_def = tf.GraphDef()
-                with gfile.FastGFile(model_path, 'rb') as fid:
+                graph_def = tf.compat.v1.GraphDef()
+                with tf.io.gfile.GFile(model_path, 'rb') as fid:
                     graph_def.ParseFromString(fid.read())
-                    tf.import_graph_def(graph_def, input_map=None, name='')
+                    tf.import_graph_def(graph_def, name='')
 
             # Instance of the session, placeholders and embeddings (output)
             #gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.05)
-            self.sess = tf.Session(graph=siamese_graph,
-                                   config=tf.ConfigProto(#gpu_options=gpu_options,
+            self.sess = tf.compat.v1.Session(graph=siamese_graph,
+                                   config=tf.compat.v1.ConfigProto(#gpu_options=gpu_options,
                                                          log_device_placement=False))
 
             self.inputs_tensor = siamese_graph.get_tensor_by_name('input:0')

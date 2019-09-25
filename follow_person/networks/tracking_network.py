@@ -30,7 +30,7 @@ class TrackingNetwork():
 
 
         print ("Creating session...")
-        conf = tf.compat.v1.ConfigProto(log_device_placement=True)
+        conf = tf.compat.v1.ConfigProto(log_device_placement=False)
         conf.gpu_options.allow_growth = True
 
         self.sess = tf.compat.v1.Session(config=conf)
