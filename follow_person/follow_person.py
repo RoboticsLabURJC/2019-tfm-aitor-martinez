@@ -59,7 +59,7 @@ class Follow_Person:
 
         mom_found_now = False
         # Iteration over all faces and persons...
-        for person in self.persons:
+        for idx, person in enumerate(self.persons):
 
             if person.is_mom:
                 self.mom_coords = person.coords

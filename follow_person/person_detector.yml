@@ -3,7 +3,7 @@ Camera: 0
 Network:
   Framework: TensorFlow  # Currently supported: "Keras" or "TensorFlow"
   #Model: VGG_512_512_coco.h5
-  Model: ssdlite_mobilenet_v2_coco_2018_05_09_trt.pb
+  Model: ssd_mobilenet_v2_coco.pb
   Dataset: COCO # available: VOC, COCO, KITTI, OID, PET
   SiameseModel: siamese_model.pb
 
