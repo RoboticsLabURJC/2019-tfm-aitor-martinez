@@ -1,0 +1,20 @@
+export PYTHONPATH=$PYTHONPATH:/home/kasillas77/ob_detec_ws/models/research/slim
+
+python xml_to_csv.py -i images/train -o annotations/train_labels.csv
+python xml_to_csv.py -i images/test -o annotations/test_labels.csv
+
+python generate_tf_record2.py --label0=person --label1=road --csv_input=annotations/train_labels.csv --img_path=images/train  --output_path=annotations/train.record
+python generate_tf_record2.py --label0=person --label1=road --csv_input=annotations/test_labels.csv --img_path=images/test  --output_path=annotations/test.record
+
+
+### train ####
+python model_main_tf2.py --pipeline_config_path=pipeline2.config --model_dir=training --alsologtostderr
+
+#### Eval ####
+python model_main_tf2.py --pipeline_config_path=pipeline2.config --model_dir=training --checkpoint_dir=training --alsologtostderr
+
+python export_inference_graph.py --input_type=image_tensor --pipeline_config_path=pipeline.config --trained_checkpoint_prefix=training/ckpt-1 --output_directory=training
+
+python exporter_main_v2.py --input_type=image_tensor --pipeline_config_path=pipeline.config --trained_checkpoint_dir=training --output_directory=output_model
+
+tensorflowjs_converter --input_format=tf_saved_model --output_node_names='MobilenetV2/Predictions/Reshape_1' --saved_model_tags=serve output_model/saved_model web_model
