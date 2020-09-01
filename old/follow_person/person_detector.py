@@ -27,14 +27,12 @@ if __name__ == '__main__':
 
     camera_id = int(cfg.getPropertyWithDefault("Camera",0))
     
-    network_model = cfg.getPropertyWithDefault("Network.Model",'')
-    label_map_file = cfg.getPropertyWithDefault("Network.Labels",'')
-    net_type = cfg.getPropertyWithDefault("Network.Type",'')
+    network_model = cfg.getPropertyWithDefault("Network.Model",'ssdlite_mobilenet_v2_coco_2018_05_09_trt.pb') 
     
 
     # # The camera does not need a dedicated thread, the callbacks have their owns.
     cam = Camera(camera_id)
-    network = TrackingNetwork(network_model,label_map_file, net_type, True)
+    network = TrackingNetwork(network_model)
     network.setCamera(cam)
     display_imgs = True
 
@@ -42,14 +40,14 @@ if __name__ == '__main__':
 
         # Make an inference on the current image
         #start_time = datetime.now()
-        (predictions, boxes, scores) = network.predict()
+        network.predict()
         img = cam.get_rgb_image()
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         #elapsed = datetime.now() - start_time
         #print "elapsed {} ms. Framerate: {} fps".format(elapsed.microseconds/1000.0, 1e6/elapsed.microseconds)
-        # print ("inference output", predictions, boxes, scores)
+        print ("inference output", network.predictions, network.boxes, network.scores)
         # Draw every detected person
-        for idx, person in enumerate(boxes):
+        for idx, person in enumerate(network.boxes):
             [xmin, ymin, xmax, ymax] = person
             cv2.rectangle(img, (xmin, ymax), (xmax, ymin), (0,255,0), 5)
         if display_imgs:

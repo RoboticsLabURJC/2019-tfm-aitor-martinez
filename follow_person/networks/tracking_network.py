@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tensorflow.contrib.tensorrt as trt # to solve compat. on bin graph
 from tensorflow.python.platform import gfile
 import numpy as np
 import cv2
@@ -7,7 +6,8 @@ from PIL import Image
 from datetime import datetime
 
 
-from networks.utils import label_map_util
+from object_detection.utils import label_map_util
+from.utils import wrap_frozen_graph
 
 LABELS_DICT = {'voc': 'networks/labels/pascal_label_map.pbtxt',
                'coco': 'networks/labels/mscoco_label_map.pbtxt',
@@ -16,53 +16,37 @@ LABELS_DICT = {'voc': 'networks/labels/pascal_label_map.pbtxt',
                'pet': 'networks/labels/pet_label_map.pbtxt'}
 
 class TrackingNetwork():
-    def __init__(self, net_model):
-        self.framework = "TensorFlow"
+    def __init__(self, model, label_map_file, model_type, print_graph=False):
 
-        labels_file = LABELS_DICT['coco']
-        label_map = label_map_util.load_labelmap(labels_file) # loads the labels map.
-        categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes= 999999)
-        category_index = label_map_util.create_category_index(categories)
-        self.classes = {}
-        # We build is as a dict because of gaps on the labels definitions
-        for cat in category_index:
-            self.classes[cat] = str(category_index[cat]['name'])
+        label_map = label_map_util.load_labelmap(label_map_file) # loads the labels map.
 
+        # categories = label_map_util.convert_label_map_to_categories(
+        #     label_map,
+        #     max_num_classes=label_map_util.get_max_label_map_index(label_map),
+        #     use_display_name=True)
+        # category_index = label_map_util.create_category_index(categories)
+        self.classes = label_map_util.get_label_map_dict(label_map, use_display_name=True)
 
-        print ("Creating session...")
-        conf = tf.compat.v1.ConfigProto(log_device_placement=False)
-        conf.gpu_options.allow_growth = True
+        self._classes_idx = list(self.classes.values())
+        self._classes_names = list(self.classes.keys())
 
-        self.sess = tf.compat.v1.Session(config=conf)
-        print (" Created")
-        print ("Loading the custom graph...")
+        self.net = None
+        self.type = model_type
         # Load the TRT frozen graph from disk
-        CKPT = 'resources/' + net_model
-        self.sess.graph.as_default()
-        graph_def = tf.compat.v1.GraphDef()
-        with tf.io.gfile.GFile(CKPT, 'rb') as fid:
-            graph_def.ParseFromString(fid.read())
-        print ("Loaded...")
-        tf.import_graph_def(graph_def, name='')
-        print ("Imported")
+        if (model_type == 'graph'):
+            with open(model, 'rb') as fid:
+                graph_def = tf.compat.v1.GraphDef()
+                read = fid.read()
+                print(read)
+                graph_def.ParseFromString(read)
+            print ("Loaded...")
+            self.net = wrap_frozen_graph(graph_def=graph_def,
+                                        inputs=["x:0"],
+                                        outputs=["Identity:0"],
+                                        print_graph=print_graph)
 
-        # Set placeholders...
-        self.image_tensor = self.sess.graph.get_tensor_by_name('image_tensor:0')
-        self.detection_boxes = self.sess.graph.get_tensor_by_name('detection_boxes:0')
-        self.detection_scores = self.sess.graph.get_tensor_by_name('detection_scores:0')
-        self.detection_classes = self.sess.graph.get_tensor_by_name('detection_classes:0')
-        self.num_detections = self.sess.graph.get_tensor_by_name('num_detections:0')
-
-        self.boxes = []
-        self.scores = []
-        self.predictions = []
-
-
-        # Dummy initialization (otherwise it takes longer then)
-        dummy_tensor = np.zeros((1,1,1,3), dtype=np.int32)
-        print(self.sess.run(
-                [self.detection_boxes, self.detection_scores, self.detection_classes, self.num_detections],
-                feed_dict={self.image_tensor: dummy_tensor}))
+        elif (model_type == 'saved_model'):
+            self.net = tf.saved_model.load(model)
 
         self.confidence_threshold = 0.5
 
@@ -81,9 +65,15 @@ class TrackingNetwork():
         input_image = self.cam.get_pil_image()
         img_rsz = np.array(input_image.resize((300,300)))
 
-        (boxes, scores, predictions, _) = self.sess.run(
-            [self.detection_boxes, self.detection_scores, self.detection_classes, self.num_detections],
-            feed_dict={self.image_tensor: img_rsz[None, ...]})
+        predictions = boxes = scores = None
+        if (self.type == 'saved_model'):
+            tf_img = tf.expand_dims(tf.convert_to_tensor(img_rsz, dtype=tf.uint8), axis=0)
+            result = self.net(tf.constant(tf_img))
+            boxes = result['detection_boxes']
+            scores = result['detection_scores']
+            predictions = result['detection_classes']
+        elif (self.type == 'graph'): 
+            (predictions, boxes, scores, _) = self.net(x=tf.constant(img_rsz))
         boxes = np.squeeze(boxes)
         scores = np.squeeze(scores)
         predictions = np.squeeze(predictions)
@@ -94,7 +84,7 @@ class TrackingNetwork():
         # We map the predictions into a mask (human or not)
         mask2 = []
         for idx in predictions:
-            mask2.append(self.classes[int(idx)] == 'person')
+            mask2.append(self._classes_names[self._classes_idx.index(int(idx))] == 'person')
 
         # Total mask: CONFIDENT PERSONS
         mask = np.logical_and(mask1, mask2)
@@ -105,10 +95,12 @@ class TrackingNetwork():
         tmp_boxes = np.zeros([len(boxes), 4])
         tmp_boxes[:,[0,2]] = boxes[:,[1,3]] * self.original_width
         tmp_boxes[:,[3,1]] = boxes[:,[2,0]] * self.original_height
-        self.boxes = tmp_boxes.astype(int)
+        return_boxes = tmp_boxes.astype(int)
 
-        self.scores = scores[mask]
-        self.predictions = []
+        return_scores = scores[mask]
+        return_predictions = []
         for idx in predictions[mask]:
-            self.predictions.append(self.classes[idx])
+            return_predictions.append(self._classes_names[self._classes_idx.index(int(idx))])
+
+        return (return_predictions, return_boxes, return_scores)
 

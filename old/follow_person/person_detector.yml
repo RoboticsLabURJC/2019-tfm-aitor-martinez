@@ -1,0 +1,11 @@
+Camera: 0
+
+Network:
+  Framework: TensorFlow  # Currently supported: "Keras" or "TensorFlow"
+  #Model: VGG_512_512_coco.h5
+  Model: ssd_mobilenet_v2_coco.pb
+  Dataset: COCO # available: VOC, COCO, KITTI, OID, PET
+  SiameseModel: siamese_model.pb
+
+Mom:
+  ImagePath: mom_img/sample_img.jpg
