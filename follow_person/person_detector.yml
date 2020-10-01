@@ -1,12 +1,13 @@
-Camera: 0
+Camera: 
+  device: /home/aitor/kibotics/websim_person_dataset/images/*.jpg
+  type: images
+
+# Camera: 
+#   device: 0
+#   type: webcam
 
 Network:
-  # Framework: TensorFlow  # Currently supported: "Keras" or "TensorFlow"
-  #Model: VGG_512_512_coco.h5
-  Model: ./nets/ssd_mobilenet_v2_coco
+  # Model: ./nets/ssd_mobilenet_v2_coco
+  Model: ./nets/ssd_mobilenet_v2_coco17
   Labels: labels/mscoco_label_map.pbtxt
   Type: saved_model
-  # SiameseModel: siamese_model.pb
-
-Mom:
-  ImagePath: mom_img/sample_img.jpg

@@ -69,6 +69,7 @@ class TrackingNetwork():
         if (self.type == 'saved_model'):
             tf_img = tf.expand_dims(tf.convert_to_tensor(img_rsz, dtype=tf.uint8), axis=0)
             result = self.net(tf.constant(tf_img))
+            # print(result)
             boxes = result['detection_boxes']
             scores = result['detection_scores']
             predictions = result['detection_classes']
@@ -77,6 +78,11 @@ class TrackingNetwork():
         boxes = np.squeeze(boxes)
         scores = np.squeeze(scores)
         predictions = np.squeeze(predictions)
+
+        # print('*************************')
+        # print(predictions)
+        # print('-----------------')
+        # print(scores)
 
         # We only keep the most confident predictions.
         mask1 = scores > self.confidence_threshold # bool array

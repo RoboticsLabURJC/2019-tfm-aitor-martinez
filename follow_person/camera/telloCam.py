@@ -1,20 +1,17 @@
 import cv2
-import numpy as np
-
 from PIL import Image
 
-class Camera:
+class TelloCam:
     IMAGE_HEIGHT = 480
     IMAGE_WIDTH = 640
 
     def __init__ (self, device):
-        self._cap = cv2.VideoCapture(device)
+        self._cap = device
 
     def get_rgb_image(self):
-        _, frame = self._cap.read()
+        frame = self._cap.get_image()
         dim = (self.IMAGE_WIDTH, self.IMAGE_HEIGHT)
         frame = cv2.resize(frame, dim, interpolation = cv2.INTER_CUBIC)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         return frame
 
     def get_pil_image(self):

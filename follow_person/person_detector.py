@@ -11,11 +11,12 @@ import signal
 
 import config_with_yaml as config
 
-from camera.camera import Camera
+from camera import getCamera
 from networks import TrackingNetwork
 import cv2
 import numpy as np
 from datetime import datetime
+import time
 
 
 if __name__ == '__main__':
@@ -25,7 +26,12 @@ if __name__ == '__main__':
         cfg = config.load("person_detector.yml")
     
 
-    camera_id = int(cfg.getPropertyWithDefault("Camera",0))
+    
+    camera_type = cfg.getPropertyWithDefault("Camera.type","webcam")
+    if (camera_type == "webcam"): 
+        camera_id = int(cfg.getPropertyWithDefault("Camera.device",0))
+    else: 
+        camera_id = cfg.getPropertyWithDefault("Camera.device",0)
     
     network_model = cfg.getPropertyWithDefault("Network.Model",'')
     label_map_file = cfg.getPropertyWithDefault("Network.Labels",'')
@@ -33,7 +39,7 @@ if __name__ == '__main__':
     
 
     # # The camera does not need a dedicated thread, the callbacks have their owns.
-    cam = Camera(camera_id)
+    cam = getCamera(camera_id, camera_type)
     network = TrackingNetwork(network_model,label_map_file, net_type, True)
     network.setCamera(cam)
     display_imgs = True
@@ -56,5 +62,6 @@ if __name__ == '__main__':
             cv2.imshow("RGB", img)
             if cv2.waitKey(1) == 27:
                 break
+        time.sleep(2)
     if display_imgs:
         cv2.destroyAllWindows()

@@ -47,8 +47,8 @@ class ROSCam:
         self.depth_bridge = cv_bridge.CvBridge()
 
         # Placeholders
-        self.rgb_img = np.zeros((IMAGE_HEIGHT, IMAGE_WIDTH))
-        self.depth_img = np.zeros((IMAGE_HEIGHT, IMAGE_WIDTH))
+        self.rgb_img = np.zeros((self.IMAGE_HEIGHT, self.IMAGE_WIDTH))
+        self.depth_img = np.zeros((self.IMAGE_HEIGHT, self.IMAGE_WIDTH))
 
         # Subscribers
         self.rgb_lst = rospy.Subscriber(topics['rgb'], Image, self.__rgbCallback, queue_size=1)
