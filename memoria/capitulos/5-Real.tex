@@ -1,0 +1,93 @@
+\chapter{Drone real}\label{cap.clasificacion}
+En esta sección se va a explicar lo que se ha necesitado para realizar un sigue persona con un drone real con el objetivo de ser incluido en la plataforma \textit{Kibotics} para enseñanza de robótica.
+
+Para ello se ha tenido que perfeccionar el driver aportado por el fabricante\cite{tello_driver}. Además como va a ser usado por niños, se ha tenido que hacer mas amigable el interfaz, por ejemplo, en vez de tener que programar la detección de un objeto de un color indicado, se ha creado un método que recibe como parámetro el nombre del color y devuelve el cuadro que rodea dicho objeto.
+
+\section{Desarrollo del \textit{driver}}
+El \textit{driver} desarrollado para la plataforma \textbf{Kibotics} parte del proporcionado por el fabricante del drone. Añadiendo una serie de cambios por las limitaciones detectadas, además de necesitar simplificar el uso ya que está orientado a enseñanza infantil. 
+
+Este \textit{driver} permite recibir imágenes de la cámara del drone, informaciones básicas como batería restante o tiempo de vuelo. Además permite controlar el drone tanto en velocidad, como en posición (avanza x metros, gira x grados,...),... 
+
+Los problemas encontrados han sido los siguientes:
+\begin{itemize}
+  \item \textit{Driver} necesario en \textbf{Python 3.x} pero está escrito en \textbf{Python 2.7}. 
+  \item Poca fiabilidad en el envío de mensajes del \textit{driver} al drone.
+  \item Si pasan 5 segundos sin recibir mensajes el drone se desactiva.
+  \item Las velocidades de entrada están en \textbf{cm/s} y \textbf{grados/s}.
+  \item Va a ser usado por niños así que conviene simplificar su uso. 
+\end{itemize}
+\subsection{Convertir el \textbf{driver} de Python 2.7 a Python 3.x}
+Esto ha sido fácil porque casi todo el código funcionaba en\textbf{ Python 3}, las únicas diferencias eran la manera de importar los módulos que varía de entre las dos versiones y que en \textbf{Python 2} los bytes se representan como cadenas de texto(\textit{String}) y en \textbf{Python 3} son del tipo bytes.
+\begin{table}[H]
+\centering
+\label{cambios_python_2_3}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Tipo de cambio}          & \textbf{Python 2} & \textbf{Python 3} \\ \hline
+Representación de bytes          & ' '               & b' '              \\ \hline
+Importar desde mismo repositorio & import module     & import .module    \\ \hline
+\end{tabular}
+\caption{Cambios de \textbf{Python 2} a \textbf{Python 3} efectuados}
+\end{table}
+
+En la tabla \ref{cambios_python_2_3} se pueden ver los cambios efectuados.
+
+\subsection{Poca fiabilidad en el envío de mensajes del \textit{driver} al drone}
+La comunicación con el Drone consiste en enviar un mensaje y recibir una respuesta que indica que lo ha recibido, o en el caso de pedirle algún dato, como la batería restante el dato en si.
+
+EL problema radica en que o se pierde el mensaje que se envía o  se pierde la respuesta. Por lo que se ha implementado un mecanismo de reenvío de mensajes. Si no se recibe respuesta se vuelve a enviar el mismo mensaje hasta tener respuesta o se alcance el número máximo de reintentos.
+
+\subsection{Si pasan 5 segundos sin recibir mensajes el drone se desactiva}
+Este problema ha sido abordado añadiendo un hilo de \textbf{Python} que se encargue se enviar velocidades cada \textbf{25ms}. De esta manera evitamos que el Drone se desactive y además conseguimos un mejor comportamiento en el control en velocidad que usando la mecánica de reenvío de mensajes. No importa que se pierdan mensajes porque enseguida se envía otro con la velocidad actualizada.
+
+\subsection{Las velocidades de entrada están en \textbf{cm/s} y \textbf{grados/s}}
+La intención ha sido que se use el sistema internacional en todo momento y en este caso son \textbf{m/s} y \textbf{rad/s}.
+Esto es tan fácil como realizar las conversiones pertinentes en las funciones para establecer las velocidades.
+
+\section{Detección de la persona}
+Para la detección de la persona se ha utilizado una red de detección \textbf{SSD Mobilenet v2 FPN lite} preentrenada con el dataset coco.
+
+Esta red tiene 3 componentes principales: 
+\begin{itemize}
+  \item \textit{\gls{fpn} lite}\cite{fpn}. Permite extraer características de la imagen con indiferencia del tamaño del objeto 
+  \item \textit{Mobilenet v2}. Es una red convolucional de extracción de características.
+  \item \textit{\gls{ssd}\cite{ssd}}. Comprueba si hay cada clase en las regiones de interés seleccionadas y permite un mayor ajuste de dicha región.
+\end{itemize}
+Se ha elegido dicha red porque funciona de manera fiable y rápida. Para poder trabajar con ella en se usa \textbf{Tensorflow 2.0}. Además se ha tenido que desarrollar un recubrimiento para poder usar la red de manera fácil.
+Esta clase desarrollada permite cargar la red indicada por configuración ya sea un modelo de \textbf{Tensoflow} o un grafo. Además agrega un postprocesado de la información de salida de la red: 
+
+\begin{itemize}
+  \item convirtiendo en \textit{numpy arrays} los datos desde tensores
+  \item Desechando los resultados con una puntuación menor al límite indicado por configuración.
+  \item Filtrando los resultados para quedarse con las clases buscadas, en este caso personas.
+  \item También se convierten los tamaños de las regiones de interés de porcentaje a píxeles.
+\end{itemize}
+
+Además se ha creado también otro nivel de abstracción superior para la fuente de la imagen para ayudar a su uso, así mediante configuración se indica si la fuente es el drone, una webcam, un directorio de imágenes o un vídeo y la fuente en sí y no hay que preocuparse de procesar la imagen para convertirla en RGB en caso de que sea la fuente no lo sea por ejemplo. La red recibirá siempre la imagen igual provenga del origen que provenga.
+
+La red al final devuelve 3 \textit{arrays}, el primero con la clase a la que pertenecen las predicciones , el segundo con la regiones de interés o \textit{bounding boxes} (x mínima, y mínima, x máxima, y máxima) y el tercero con las puntuaciones.
+
+\section{control PID}
+El control PID es un bucle de control que calcula la siguiente operación en cada iteración.
+\[ u(t) = K_p e(t) + K_i \int_{t}^{0} e(t') dt' + K_d \frac{de(t)}{dt}\]
+Donde \textbf{e} es el error con respecto al objetivo y las \textbf{K} constantes que deben calcularse experimentalmente.
+
+Una vez que se procesa la imagen recibida por el drone y se tienen las predicciones, se selecciona la persona con mayor puntuación y de su \textit{bounding box} se extrae posición central, el área y la posición superior.
+
+Para controlar el drone se va a hacer con tres velocidades, avance, giro y movimiento vertical. Para ello se utiliza un control PID (en este caso debido al funcionamiento del drone solo proporcional y derivativo) para cada una de las velocidades.
+
+En el caso de la velocidad de avance, se toma como referencia el área, para el giro la posición del centro en las coordenadas x de la imagen y para el la altura se usa la posición superior del \textit{bounding box}.
+En el caso de la velocidad vertical se ha decidido usar como referencia la posición superior del \textit{bounding box} posicionándolo en torno a un 10\% de la parte superior de la imagen con el objetivo que se vea la cara de la persona. se probó también la manera fácil que es centrar verticalmente la persona en la imagen, pero puede ocurrir que solo se tenga una parte de la persona y esté centrado. como se puede ver en las imágenes \ref{fig:real1} y \ref{fig:real2} en ambos casos el centro del cuadrado está muy próximo al centro vertical de la imagen, pero no por ello estar bien.
+
+\begin{figure}[!htb]
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap1.png}
+    \caption{Persona seleccionada}\label{fig:real1}
+\endminipage\hfill
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap2.png}
+    \caption{Torso detectado}\label{fig:real2}
+\endminipage\hfill
+\end{figure}
+
+En cambio tomando como referencia el punto más alto del cuadrado se tiende a obtener la imagen \ref{fig:real1} que además facilita la detección de la persona.
