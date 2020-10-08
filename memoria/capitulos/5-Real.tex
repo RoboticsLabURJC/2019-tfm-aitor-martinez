@@ -7,7 +7,7 @@ Para ello se ha tenido que perfeccionar el driver aportado por el fabricante\cit
 La aplicación desarrollada se compone de 2 partes claras (figura \ref{fig:esquemaReal}), la primera es la detección neuronal y la segunda los controladores PID.
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=0.7\textwidth]{figures/real/esquema.png}
+    \includegraphics[width=0.9\textwidth]{figures/real/esquema2.png}
 		\caption{Diseño Aplicación}
 		\label{fig:esquemaReal}
 		\end{center}
@@ -71,13 +71,13 @@ El problema radica en que en frecuentemente en la \textit{WiFi} que comunica dro
  Para mejorar este apartado solo ha hecho falta reducir el tiempo entre mensajes de velocidad a \textbf{25ms}. Además no importa que se pierdan mensajes porque enseguida se envía otro con la velocidad actualizada.
 
 \section{Detección visual de la persona}
-Para elegir la red se han comparado tres del conjunto de redes preentrenadas preentrenada con el \textit{dataset} \acrshort{coco} de \textit{Object Detection API}\footnote{https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md}:
+Para elegir la red se han comparado tres del conjunto de redes preentrenadas con el \textit{dataset} \acrshort{coco} de \textit{Object Detection API}\footnote{https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md}:
 \begin{itemize}
   \item SSD Mobilenet v2 FPN de 320x320
   \item CenterNet resnet50 FPN de 512x512
   \item SSD Resnet50 FPN de 640x640
 \end{itemize}
-Para esta elección se ha grabado un vídeo con la cámara del drone (en todo momento hay una persona) y se ha usado el mismo vídeo con las tres opciones, y en un ordenador con un procesador I7 de octava generación, 16 GB de RAM y con gráfica integrada, obteniendo los resultado de la tabla \ref{tab:comparativa_redes}.
+Para esta elección se ha grabado un vídeo con la cámara del drone (720x960 píxeles), donde en todo momento hay una persona y se ha usado el mismo vídeo con las tres opciones, y en un ordenador con un procesador I7 de octava generación, 16 GB de RAM y con gráfica integrada. obteniendo los resultado de la tabla \ref{tab:comparativa_redes}.
 \begin{table}[H]
 \centering
 \begin{tabular}{|c|c|c|c|}
@@ -106,8 +106,14 @@ Esta red tiene 3 componentes principales:
 \end{itemize}
 
 Para poder trabajar con ella en se usa \textbf{Tensorflow 2.0}. Además se ha tenido que desarrollar un recubrimiento para poder usar la red de manera fácil.
-Esta clase desarrollada permite cargar la red indicada por configuración ya sea un modelo de \textbf{Tensoflow} o un grafo. Además agrega un postprocesado de la información de salida de la red: 
-
+Esta clase desarrollada permite cargar la red indicada por configuración ya sea un modelo de \textbf{Tensoflow} o un grafo. Además agrega un postprocesado de la información de salida de la red (figura \ref{fig:getPerson}): 
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=1\textwidth]{figures/real/getPerson.png}
+		\caption{función \textit{getPerson}}
+		\label{fig:getPerson}
+		\end{center}
+\end{figure}
 \begin{itemize}
   \item convirtiendo en \textit{numpy arrays} los datos desde tensores
   \item Desechando los resultados con una puntuación menor al límite indicado por configuración.
@@ -115,20 +121,37 @@ Esta clase desarrollada permite cargar la red indicada por configuración ya sea
   \item También se convierten los tamaños de las regiones de interés de porcentaje a píxeles.
 \end{itemize}
 
-Además se ha creado también otro nivel de abstracción superior para la fuente de la imagen para ayudar a su uso, así mediante configuración se indica si la fuente es el drone, una webcam, un directorio de imágenes o un vídeo y la fuente en sí y no hay que preocuparse de procesar la imagen para convertirla en RGB en caso de que sea la fuente no lo sea por ejemplo. La red recibirá siempre la imagen igual provenga del origen que provenga.
+Además se ha creado también otro nivel de abstracción superior para la fuente de la imagen para ayudar a su uso, así mediante configuración se indica si la fuente es el drone, una webcam, un directorio de imágenes o un vídeo y la fuente en sí y no hay que preocuparse de procesar la imagen para convertirla en RGB en caso de que sea la fuente no lo sea por ejemplo.
 
-La red al final devuelve 3 \textit{arrays}, el primero con la clase a la que pertenecen las predicciones , el segundo con la regiones de interés o \textit{bounding boxes} (x mínima, y mínima, x máxima, y máxima) y el tercero con las puntuaciones.
+La red al final devuelve 3 \textit{arrays}, el primero con la clase a la que pertenecen las detecciones, el segundo con las regiones de interés o \textit{bounding boxes} (x mínima, y mínima, x máxima, y máxima) y el tercero con las puntuaciones, que indica la fiabilidad estimada de cada una de las detecciones.
+
+Todo este procesamiento visual se ha incluido en el \textit{driver} para que pueda ser usado de manera sencilla desde las nuevas aplicaciones de robótica de los usuarios de \textit{Kibotics}.
 
 \section{control PID}
 El control PID es un bucle de control que calcula la siguiente operación en cada iteración.
 \[ u(t) = K_p e(t) + K_i \int_{t}^{0} e(t') dt' + K_d \frac{de(t)}{dt}\]
 Donde \textbf{e} es el error con respecto al objetivo y las \textbf{K} constantes que deben calcularse experimentalmente.
 
-Una vez que se procesa la imagen recibida por el drone y se tienen las predicciones, se selecciona la persona con mayor puntuación y de su \textit{bounding box} se extrae posición central, el área y la posición superior.
+Una vez que se procesa la imagen recibida por el drone y se tienen las detecciones, se selecciona la persona con mayor puntuación y de su \textit{bounding box} se extrae posición central, el área y la posición superior.
 
-Para controlar el drone se va a hacer con tres velocidades, avance, giro y movimiento vertical. Para ello se utiliza un control PID (en este caso debido al funcionamiento del drone solo proporcional y derivativo) para cada una de las velocidades.
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{figures/real/cap3.png}
+		\caption{Detección de persona}
+		\label{fig:bbox_ideal}
+		\end{center}
+\end{figure}
 
-En el caso de la velocidad de avance, se toma como referencia el área, para el giro la posición del centro en las coordenadas x de la imagen y para el la altura se usa la posición superior del \textit{bounding box}.
+Para controlar el drone se va a hacer con tres velocidades, avance, giro horizontal y movimiento vertical. Para ello se utiliza un control PID (en este caso debido al funcionamiento del drone solo proporcional y derivativo) para cada una de las velocidades.
+\subsection*{Control de avance}
+
+En el caso de la velocidad de avance, se toma como referencia el área. Se fija un área objetivo para el \textit{bounding box}, si la obtenida es menor, se avanza y si es mayor se retrocede. Las constantes \textbf{proporcional y derivativa} en este caso son \textbf{0.01 y 0} respectivamente.
+
+\subsection*{Control de giro horizontal o guiñada}
+
+En este caso se toma como referencia la coordenada x del centro de la imagen. Si el \textit{bounding box} se mueve a la izquierda hay que girar a la izquierda y si se va a derecha igual. Las constantes \textbf{proporcional y derivativa} en este caso son \textbf{0.7 y 0.001} respectivamente.
+
+\subsection*{Control de elevación}
 En el caso de la velocidad vertical se ha decidido usar como referencia la posición superior del \textit{bounding box} posicionándolo en torno a un 10\% de la parte superior de la imagen con el objetivo que se vea la cara de la persona. se probó también la manera fácil que es centrar verticalmente la persona en la imagen, pero puede ocurrir que solo se tenga una parte de la persona y esté centrado. como se puede ver en las imágenes \ref{fig:real1} y \ref{fig:real2} en ambos casos el centro del cuadrado está muy próximo al centro vertical de la imagen, pero no por ello estar bien.
 
 \begin{figure}[!htb]
@@ -143,3 +166,61 @@ En el caso de la velocidad vertical se ha decidido usar como referencia la posic
 \end{figure}
 
 En cambio tomando como referencia el punto más alto del cuadrado se tiende a obtener la imagen \ref{fig:real1} que además facilita la detección de la persona.
+Las constantes \textbf{proporcional y derivativa} en este caso son \textbf{3 y 0.5} respectivamente. Hay que destacar además que en el caso de tener error por estar muy cerca del borde superior de la imagen se ha sumado 0.3 a dicho error para evitar que considere el borde  superior de la imagen como valor aceptable. 
+
+
+\section{Validación experimental}
+La validación experimental del desarrollo se ha hecho en 4 casos, uno por cada \textit{PID} y el conjunto. En todos los casos el bucle de control funciona a 7 \acrshort{fps}.
+
+\subsection*{Control de giro horizontal}
+Esta prueba consiste en moverse de izquierda a derecha delante del drone para ajustar las constantes del \textit{PID} de giro horizontal.
+
+\begin{figure}[!htb]
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap1.png}
+    \caption{Persona seleccionada}\label{fig:real1}
+\endminipage\hfill
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap2.png}
+    \caption{Torso detectado}\label{fig:real2}
+\endminipage\hfill
+\end{figure}
+\subsection*{Control de elevación}
+Esta prueba consiste en agacharse y levantarse delante del drone para ajustar las constantes del \textit{PID} de elevación.
+
+\begin{figure}[!htb]
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap1.png}
+    \caption{Persona seleccionada}\label{fig:real1}
+\endminipage\hfill
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap2.png}
+    \caption{Torso detectado}\label{fig:real2}
+\endminipage\hfill
+\end{figure}
+\subsection*{Control de avance}
+Esta prueba consiste en avanzar y retroceder delante del drone para ajustar las constantes del \textit{PID} de avance.
+
+\begin{figure}[!htb]
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap1.png}
+    \caption{Persona seleccionada}\label{fig:real1}
+\endminipage\hfill
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap2.png}
+    \caption{Torso detectado}\label{fig:real2}
+\endminipage\hfill
+\end{figure}
+\subsection*{Ejecución típica completa}
+Esta prueba consiste en moverse por la habitación para comprobar si el comportamiento conjunto es el correcto. De no serlo, toca ajustar las constantes oportunas.
+
+\begin{figure}[!htb]
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap1.png}
+    \caption{Persona seleccionada}\label{fig:real1}
+\endminipage\hfill
+\minipage{0.45\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/cap2.png}
+    \caption{Torso detectado}\label{fig:real2}
+\endminipage\hfill
+\end{figure}
