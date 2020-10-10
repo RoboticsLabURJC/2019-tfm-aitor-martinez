@@ -1,3 +1,20 @@
 \chapter{Conclusiones}\label{cap.conclusiones}
+Una vez documentado el software diseñado y desarrollado a lo largo de este \acrshort{tfm} y la funcionalidad que ofrece, se dedica este capítulo a la comprobación de los objetivos alcanzados, así como a la explicación de los conocimientos adquiridos y una breve exposición de posibles mejoras y de las líneas de actuación futuras.
+\section{Conclusiones}
+El objetivo principal, que era la creación de la arquitectura necesaria para añadir procesamiento visual complejo de manera sencilla de usar se ha cumplido, ahora ya se podrían desarrollar practicas tanto con drone simulado como real de detección de personas.
+\newline
 
-conclusiones
+En cuanto a los subobjetivos, también se ha conseguido un \textit{siguePersona} visual real gracias al uso de \textit{Tensorflow} y \textit{Opencv} para detectar a la persona y el uso de varios controladores PID para las velocidades. Para lograr este subobjetivo se ha necesitado crear clases de \textit{Python} para contener las las redes y permitir un nivel de abstracción mayor además de para simplificar su uso mediante métodos personalizados como \textit{getPerson}.
+\newline
+
+También se ha cumplido el subobjetivo \textit{siguePersona} visual simulado, teniendo que crear un mundo que se adaptara a la necesidades y creando clases de \textit{Javascript} para contener las las redes y permitir un nivel de abstracción mayor además de para simplificar su uso mediante métodos personalizados como \textit{getPerson}. Además para este objetivo se ha necesitado crear un \textit{dataset} y reentrenar una red de detección.
+\newline
+
+De manera personal, también se ha alcanzado el objetivo de mejorar en conocimientos en el campo del desarrollo web y el modelado 3D. Gracias a ello se han adquirido conocimientos en tecnologías web de procesado de imagen que en un principio creía que era inviable por la necesidad de recursos que tiene y las limitaciones propias del interprete de \textit{Javascript}.
+\section{Trabajos futuros}
+Las contribuciones de este \acrshort{tfm} han abierto las posibilidades para desarrollar nuevas prácticas de la plataforma \textit{Kibotics}. Pero esto es solo el principio, algunas mejoras pueden ser:
+
+\begin{itemize}
+  \item \textbf{Creación de prácticas que utilicen esta tecnología}. Se ha asentado la base, pero ahora toca desarrollar prácticas se seguimiento de personas.
+  \item \textbf{Aumentar el numero de opciones en cuanto a detección}, como por ejemplo un sigue persona que detecte caras para poder seguir a una persona en un grupo
+\end{itemize}
