@@ -154,7 +154,7 @@ En este caso se toma como referencia la coordenada x del centro de la imagen. Si
 \section{Validación experimental}
 La validación experimental del desarrollo se ha hecho en 3 casos: un test unitario por cada \textit{PID}  un test global del conjunto. En todos los casos el bucle de control funciona a 7 \acrshort{fps}.
 
-\subsection*{Control de giro horizontal}
+\subsection{Control de giro horizontal}
 Esta prueba consiste en colocar uno de los modelos 3D moviéndose de izquierda a derecha delante del drone, mediante una animación de A-frame\footnote{\url{https://aframe.io}}. Permite ajustar las constantes del \textit{PID} de giro horizontal\footnote{\url{https://www.youtube.com/watch?v=xLa3wSYIIuY}} (figura \ref{fig:sim_giro}).
 
 \begin{figure}[!htb]
@@ -170,7 +170,7 @@ Esta prueba consiste en colocar uno de los modelos 3D moviéndose de izquierda a
 \caption{Ejemplo de giro horizontal}
 \label{fig:sim_giro}
 \end{figure}
-\subsection*{Control de avance}
+\subsection{Control de avance}
 Esta prueba consiste en colocar uno de los modelos 3D de persona alejándose y acercándose al drone para ajustar las constantes del \textit{PID} de avance\footnote{\url{https://www.youtube.com/watch?v=CNo6rionlcE}} (figura \ref{fig:sim_avance}).
 
 \begin{figure}[!htb]
@@ -186,17 +186,31 @@ Esta prueba consiste en colocar uno de los modelos 3D de persona alejándose y a
 \caption{Ejemplo de avance}
 \label{fig:sim_avance}
 \end{figure}
-\subsection*{Ejecución típica completa}
+\subsection{Ejecución típica completa}
 En este caso en vez de usar una animación, se le ha conectado un teleoperador existente en \textit{Websim}, que permite controlar un objeto en el mundo simulado con las flechas del teclado, para poder mover libremente el modelo 3D de la persona para que lo siga el \textit{drone} (figura \ref{fig:ejecucion_sim}). Si el movimiento no es el esperado, toca ajustar las constantes oportunas.
 
-\begin{figure}[H]
-  \begin{center}
-  \includegraphics[width=0.7\textwidth]{figures/simulado/comp_1.png}\hfill
-  \includegraphics[width=0.7\textwidth]{figures/simulado/comp_2.png}\hfill
-    \includegraphics[width=0.7\textwidth]{figures/simulado/comp_3.png}\hfill
-		\caption{Ejecución Típica}
-		\label{fig:ejecucion_sim}
-		\end{center}
+% \begin{figure}[H]
+%   \begin{center}
+%   \includegraphics[width=0.7\textwidth]{figures/simulado/comp_1.png}\hfill
+%   \includegraphics[width=0.7\textwidth]{figures/simulado/comp_2.png}\hfill
+%     \includegraphics[width=0.7\textwidth]{figures/simulado/comp_3.png}\hfill
+% 		\caption{Ejecución Típica}
+% 		\label{fig:ejecucion_sim}
+% 		\end{center}
+% \end{figure}
+
+\begin{figure}[!htb]
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/simulado/comp_1.png}
+\endminipage\hfill
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/simulado/comp_2.png}
+\endminipage\hfill
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/simulado/comp_3.png}
+\endminipage\hfill
+\caption{Ejecución Típica}
+\label{fig:ejecucion_sim}
 \end{figure}
 
 

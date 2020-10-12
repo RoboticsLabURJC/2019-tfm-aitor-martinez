@@ -1,53 +1,58 @@
 \chapter{Comportamiento SiguePersona visual con Drone real}\label{cap.real}
-En este capítulo se explica lo que se ha desarrollado para conseguir un comportamiento sigue persona con un drone real con el objetivo de ser incluido en la plataforma \textit{Kibotics} para enseñanza de robótica.
+En este capítulo se explica el software que se ha desarrollado para conseguir un comportamiento sigue persona con un drone real con el objetivo de ser incluido en la plataforma \textit{Kibotics} para enseñanza de robótica.
 
-Para ello se ha tenido que perfeccionar el driver aportado por el fabricante\cite{tellodriver}. Además como va a ser usado por niños, se ha tenido que hacer más amigable el interfaz, por ejemplo, en vez de tener que programar la detección de un objeto de un color indicado, se ha creado un método que recibe como parámetro el nombre del color y devuelve el cuadro que rodea dicho objeto.
+Para ello se ha tenido que perfeccionar el driver aportado por el fabricante \cite{tellodriver}. Además, como va a ser usado por niños, se ha incorporado una nueva función al interfaz sencilla de usar, por ejemplo, en vez de tener que programar la detección de un objeto de un color indicado, se ha creado un método que recibe como parámetro el nombre del color y devuelve el cuadro que rodea dicho objeto.
 
 \section{Diseño}
-La aplicación desarrollada se compone de 2 partes claras (figura \ref{fig:esquemaReal}), la primera es la detección neuronal y la segunda los controladores PID.
+La aplicación desarrollada se compone de 2 partes claras, típicas en los comportamientos robóticos sencillos: una parte perceptiva y una parte de toma de decisiones de control, ambas se ejecutan continuamente, en un bucle infinito de iteraciones (Figura \ref{fig:esquemaReal}). La primera es la detección neuronal de objeto en la imagne usando \textit{TensorFlowJS} y la segunda son tres controladores PID que gobiernan el movimiento del drone en tres ejes, el delante-detrás, el arriba-abajo y el giro izquierda-derecha..
 \begin{figure}[H]
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/real/esquema2.png}
-		\caption{Diseño Aplicación}
+		\caption{Diseño de la aplicación SiguePersona visual}
 		\label{fig:esquemaReal}
 		\end{center}
 \end{figure}
 
 La detección neuronal es un recubrimiento de la red neuronal que recibe las imágenes del driver y devuelve los \textit{bounding boxes}, puntuaciones y clases detectadas. 
 La parte de los controladores usando los \textit{bounding boxes} calcula la velocidades y se las pasa al driver.
-\section{Desarrollo del \textit{driver}}
-El \textit{driver} desarrollado para la plataforma \textbf{Kibotics} parte del proporcionado por el fabricante del drone. Añadiendo una serie de cambios por las limitaciones detectadas, además de necesitar simplificar el uso ya que está orientado a enseñanza infantil. 
 
-Este \textit{driver} permite recibir imágenes de la cámara del drone, informaciones básicas como batería restante o tiempo de vuelo. Además permite controlar el drone tanto en velocidad, como en posición (avanza x metros, gira x grados,...),... 
+
+\section{Desarrollo del \textit{driver} real}
+El \textit{driver} desarrollado para la plataforma \textit{Kibotics} parte del proporcionado por el fabricante del drone. Se han añadido una serie de cambios por las limitaciones detectadas, además de necesitar simplificar el uso ya que está orientado a enseñanza infantil. 
+
+Este \textit{driver} permite recibir imágenes de la cámara del drone, recibir informaciones básicas como batería restante o tiempo de vuelo. Además permite controlar el drone tanto en velocidad como en posición (avanza x metros, gira x grados,...), ...\\
+
+El driver ejecuta en el ordenador, que a su vez está en continua comunicación con el drone \textit{Tello} a través de la red \textit{WiFi} que levanta de modo automático el propio drone. El driver no ejecuta a bordo del cuadricóptero.
+
 \subsection{Primera versión}
 Esta primera versión tiene el objetivo de subsanar los siguientes problemas:
 \begin{itemize}
-  \item El \textit{driver} no tiene control en velocidad.
+  \item El \textit{driver} no tiene control en velocidad, , sólo control en posición, que se consigue gracias a la cámara ventral y la estabilización visual que proporciona el fabricante, como mecanismo de seguridad.
   \item Si pasan 5 segundos sin recibir mensajes el drone se desactiva
-  \item Las velocidades de entrada están en \textbf{cm/s} y \textbf{grados/s}.
+  \item Las velocidades de entrada están en \textbf{cm/s} y \textbf{grados/s} de las funciones del driver del fabricante.
 \end{itemize}
 
 \subsubsection*{No tiene control en velocidad}
-El \textit{driver} aportado por el fabricante en \textit{Python} viene sin control en velocidad, si trae opciones para poder dar valor a las velocidades usadas por el drone y control en posición, pero no control en velocidad.
-Después de analizar el documento del \acrshort{sdk}\footnote{\url{https://terra-1-g.djicdn.com/2d4dce68897a46b19fc717f3576b7c6a/Tello\%20\%E7\%BC\%96\%E7\%A8\%8B\%E7\%9B\%B8\%E5\%85\%B3/For\%20Tello/Tello\%20SDK\%20Documentation\%20EN_1.3_1122.pdf}} se vio que si existe un comando para el control en velocidad, pero que no se ha implementado en el driver aportado. 
-Se implementa dicho método en el \textit{driver}. Además se implementa un hilo que se encarga de enviar cada poco tiempo la velocidad (500ms) como recordatorio porque, si no, como mecanismo de seguridad el drone se detiene si no recibe más mensajes de velocidad.
+El \textit{driver} aportado por el fabricante en \textit{Python} viene sin control en velocidad. Sí trae opciones para poder dar valor a las velocidades usadas por el drone y control en posición, pero no control en velocidad.
+Después de analizar el documento del \acrshort{sdk}\footnote{\url{https://terra-1-g.djicdn.com/2d4dce68897a46b19fc717f3576b7c6a/Tello\%20\%E7\%BC\%96\%E7\%A8\%8B\%E7\%9B\%B8\%E5\%85\%B3/For\%20Tello/Tello\%20SDK\%20Documentation\%20EN_1.3_1122.pdf}} se vio que sí existe un comando planeado para el control en velocidad, pero que no se ha implementado realmente en el \textit{driver} aportado. 
+Se implementa dicho método en el \textit{driver} desarrollado. Además, se implementa un hilo que se encarga de enviar cada poco tiempo la velocidad (500ms) como recordatorio porque, si no, como mecanismo de seguridad el drone se detiene si no recibe más mensajes de velocidad.
 
 \subsubsection*{Las velocidades de entrada están en \textbf{cm/s} y \textbf{grados/s}}
-La intención ha sido que se use el sistema internacional en todo momento y en este caso son \textbf{m/s} y \textbf{rad/s}.
+La intención ha sido que se use el Sistema Internacional en todo momento y en este caso son \textbf{m/s} y \textbf{rad/s}.
 Esto es tan fácil como realizar las conversiones pertinentes en las funciones para establecer las velocidades.
 
 \subsubsection*{Si pasan 5 segundos sin recibir mensajes el drone se desactiva}
-Este problema ha sido abordado añadiendo un hilo de \textbf{Python}(perro de guarda, \textit{watchdog}) que se encargue se enviar velocidades cada \textbf{500ms}. De esta manera evitamos que el \textit{Drone} se desactive.
+Este problema ha sido resuelto añadiendo un hilo de \textbf{Python} (perro de guarda, \textit{watchdog}) que se encarga de enviar velocidades cada \textbf{500ms}. De esta manera evitamos que el \textit{Drone} se desactive.
 
 \subsection{Segunda versión}
 Los problemas subsanados en esta versión han sido los siguientes:
 \begin{itemize}
-  \item \textit{Driver} necesario en \textbf{Python 3.x} pero está escrito en \textbf{Python 2.7}. 
+  \item \textit{Driver} es necesario en Python 3.x pero en la primera versión está escrito en Python 2.7. 
   \item Poca fiabilidad en el envío de mensajes del \textit{driver} al drone.
   \item El control en velocidad es poco reactivo.
 \end{itemize}
 \subsubsection*{Convertir el \textbf{driver} de Python 2.7 a Python 3.x}
-Esto ha sido fácil porque casi todo el código de la aplicación funcionaba en\textbf{ Python 3}, las únicas diferencias eran la manera de importar los módulos que varía de entre las dos versiones y que en \textbf{Python 2} los bytes se representan como cadenas de texto(\textit{String}) y en \textbf{Python 3} son del tipo bytes.
+Esto ha sido fácil porque casi todo el código de la aplicación funcionaba en Python 3, las únicas diferencias eran la manera de importar los módulos que varía de entre las dos versiones y que en Python 2 los bytes se representan como cadenas de texto(\textit{String}) y en Python 3 son del tipo bytes.
 \begin{table}[H]
 \centering
 \begin{tabular}{|c|c|c|}
@@ -56,19 +61,19 @@ Esto ha sido fácil porque casi todo el código de la aplicación funcionaba en\
 Representación de bytes          & ' '               & b' '              \\ \hline
 Importar desde mismo repositorio & import module     & import .module    \\ \hline
 \end{tabular}
-\caption{Cambios de \textbf{Python 2} a \textbf{Python 3} efectuados}
+\caption{Cambios de Python 2 a Python 3 efectuados}
 \label{tab:cambios_python_2_3}
 \end{table}
 
 En la tabla \ref{tab:cambios_python_2_3} se pueden ver los cambios efectuados.
 
 \subsubsection*{Poca fiabilidad en el envío de mensajes del \textit{driver} al drone}
-La comunicación con el Drone consiste en enviar un mensaje y recibir una respuesta que indica que lo ha recibido, o en el caso de pedirle algún dato, como la batería restante el dato en si.
+La comunicación con el Drone consiste en enviar un mensaje y recibir una respuesta que confirma que lo ha recibido, o en el caso de pedirle algún dato como la batería restante el dato en si.
 
-El problema radica en que en frecuentemente en la \textit{WiFi} que comunica drone y ordenador o se pierde el mensaje que se envía o  se pierde la respuesta. Por lo que se ha implementado un mecanismo de reenvío de mensajes. Si no se recibe respuesta se vuelve a enviar el mismo mensaje hasta tener respuesta o se alcance el número máximo de reintentos.
+El problema radica en que frecuentemente en la \textit{WiFi} que comunica drone y ordenador o se pierde el mensaje que se envía o  se pierde la respuesta. Por lo que se ha implementado un mecanismo de reenvío de mensajes. Si no se recibe respuesta se vuelve a enviar el mismo mensaje hasta tener respuesta o se alcance el número máximo de reintentos.
 
 \subsubsection*{El control en velocidad es poco reactivo}
- Para mejorar este apartado solo ha hecho falta reducir el tiempo entre mensajes de velocidad a \textbf{25ms}. Además no importa que se pierdan mensajes porque enseguida se envía otro con la velocidad actualizada.
+ Para mejorar este apartado solo ha hecho falta reducir el tiempo entre mensajes de velocidad a \textbf{25ms}. Además, no importa que se pierdan mensajes porque enseguida se envía otro con la velocidad actualizada.
 
 \section{Detección visual de la persona}
 Para elegir la red se han comparado tres del conjunto de redes preentrenadas con el \textit{dataset} \acrshort{coco} de \textit{Object Detection API}\footnote{\url{https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md}}:
@@ -77,7 +82,7 @@ Para elegir la red se han comparado tres del conjunto de redes preentrenadas con
   \item CenterNet resnet50 FPN de 512x512
   \item SSD Resnet50 FPN de 640x640
 \end{itemize}
-Para esta elección se ha grabado un vídeo con la cámara del drone (720x960 píxeles), donde en todo momento hay una persona y se ha usado el mismo vídeo con las tres opciones, y en un ordenador con un procesador I7 de octava generación, 16 GB de RAM y con gráfica integrada. obteniendo los resultado de la tabla \ref{tab:comparativa_redes}.
+Para esta elección se ha grabado un vídeo con la cámara del drone real (720x960 píxeles), donde en todo momento hay una persona y se ha usado el mismo vídeo con las tres opciones, y en un ordenador con un procesador I7 de octava generación, 16 GB de RAM y con gráfica integrada. obteniendo los resultado de la tabla \ref{tab:comparativa_redes}.
 \begin{table}[H]
 \centering
 \begin{tabular}{|c|c|c|c|}
@@ -90,27 +95,26 @@ CenterNet Resnet50 v1 & 450ms           & 85\%        & 71\%           \\ \hline
 \caption{Comparativa de redes}
 \label{tab:comparativa_redes}
 \end{table}
-Se ha elegido \textit{SSD Mobilenet v2 FPN}(figura \ref{fig:mobilenet}) porque es la única que funciona a una velocidad razonable.
+Se ha elegido \textit{SSD Mobilenet v2 FPN} (Figura \ref{fig:mobilenet}) porque es la única que funciona a una velocidad razonable para incorporar un comportamiento robótico reactivo.
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=0.6\textwidth]{figures/real/mobilenet.png}
-		\caption{Esquema de una red Mobilenet ssd}
+    \includegraphics[width=0.8\textwidth]{figures/real/mobilenet.png}
+		\caption{Esquema de una red Mobilenet \acrshort{ssd}}
 		\label{fig:mobilenet}
 		\end{center}
 \end{figure}
-Esta red tiene 3 componentes principales: 
+Esta red tiene 2 componentes principales: 
 \begin{itemize}
   \item \textit{\gls{fpn} lite}\cite{fpn}. Permite extraer características de la imagen con indiferencia del tamaño del objeto 
-  \item \textit{Mobilenet v2}\cite{mobilenetv2}. Es una red convolucional de extracción de características.
-  \item \textit{\gls{ssd}\cite{ssd}}. Comprueba si hay cada clase en las regiones de interés seleccionadas y permite un mayor ajuste de dicha región.
+  \item \textit{\gls{ssd} Mobilenet v2}. Una red \acrfull{ssd} con una red base \textit{Mobilenet v2}\cite{mobilenetv2}
 \end{itemize}
 
-Para poder trabajar con ella en se usa \textbf{Tensorflow 2.0}. Además se ha tenido que desarrollar un recubrimiento para poder usar la red de manera fácil.
+Para poder trabajar con ella se usa en \textit{Tensorflow 2.0}. Además se ha tenido que desarrollar un recubrimiento para poder usar la red de manera fácil.
 Esta clase desarrollada permite cargar la red indicada por configuración ya sea un modelo de \textbf{Tensoflow} o un grafo. Además agrega un postprocesado de la información de salida de la red (figura \ref{fig:getPerson}): 
 \begin{figure}[H]
   \begin{center}
     \includegraphics[width=1\textwidth]{figures/real/getPerson.png}
-		\caption{función \textit{getPerson}}
+		\caption{Función \textit{getPerson}}
 		\label{fig:getPerson}
 		\end{center}
 \end{figure}
@@ -121,16 +125,16 @@ Esta clase desarrollada permite cargar la red indicada por configuración ya sea
   \item También se convierten los tamaños de las regiones de interés de porcentaje a píxeles.
 \end{itemize}
 
-Además se ha creado también otro nivel de abstracción superior para la fuente de la imagen para ayudar a su uso, así mediante configuración se indica si la fuente es el drone, una webcam, un directorio de imágenes o un vídeo y la fuente en sí y no hay que preocuparse de procesar la imagen para convertirla en RGB en caso de que sea la fuente no lo sea por ejemplo.
+Además, se ha creado también otro nivel de abstracción superior para la fuente de la imagen para ayudar a su uso. Así mediante configuración se indica si la fuente es el drone, una webcam, un directorio de imágenes o un vídeo y la fuente en sí y no hay que preocuparse de procesar la imagen para convertirla en RGB en caso de que sea la fuente no lo sea por ejemplo.
 
 La red al final devuelve 3 \textit{arrays}, el primero con la clase a la que pertenecen las detecciones, el segundo con las regiones de interés o \textit{bounding boxes} (x mínima, y mínima, x máxima, y máxima) y el tercero con las puntuaciones, que indica la fiabilidad estimada de cada una de las detecciones.
 
-Todo este procesamiento visual se ha incluido en el \textit{driver} para que pueda ser usado de manera sencilla desde las nuevas aplicaciones de robótica de los usuarios de \textit{Kibotics}.
+Todo este procesamiento visual se ha incluido en el \textit{driver}, mediante una función llamada \textit{getPerson()}, para que pueda ser usado de manera sencilla desde las nuevas aplicaciones de robótica de los usuarios de \textit{Kibotics}, quedando integrada en dicha plataforma.
 
-\section{control PID}
-El control PID es un bucle de control que calcula la siguiente operación en cada iteración.
+\section{Control PID}
+El control PID es un bucle de control que calcula la siguiente orden a comandar al drone real en cada iteración.
 \[ u(t) = K_p e(t) + K_i \int_{t}^{0} e(t') dt' + K_d \frac{de(t)}{dt}\]
-Donde \textbf{e} es el error con respecto al objetivo y las \textbf{K} constantes que deben calcularse experimentalmente.
+Donde \textbf{e} es el error con respecto al objetivo y las  constantes $K_p$ , $K_i$ y $K_d$ que deben calcularse experimentalmente. los objetivos son centrar en la imagen la persona horizontalmente, verticalmente y con un tamaño concreto, lo que conlleva que el drone está mirando directamente a la persona a una distancia razonable.
 
 Una vez que se procesa la imagen recibida por el drone y se tienen las detecciones, se selecciona la persona con mayor puntuación y de su \textit{bounding box} se extrae posición central, el área y la posición superior.
 
@@ -149,10 +153,10 @@ En el caso de la velocidad de avance, se toma como referencia el área. Se fija 
 
 \subsection*{Control de giro horizontal o guiñada}
 
-En este caso se toma como referencia la coordenada x del centro de la imagen. Si el \textit{bounding box} se mueve a la izquierda hay que girar a la izquierda y si se va a derecha igual. Las constantes \textbf{proporcional y derivativa} en este caso son \textbf{0.7 y 0.001} respectivamente.
+En este caso se toma como referencia la coordenada x del centro de la imagen. Si el \textit{bounding box} se mueve a la izquierda hay que girar a la izquierda y si se va a derecha igual. Las constantes, ajustadas experimentalmente, \textbf{proporcional y derivativa} en este caso son \textbf{0.7 y 0.001} respectivamente.
 
 \subsection*{Control de elevación}
-En el caso de la velocidad vertical se ha decidido usar como referencia la posición superior del \textit{bounding box} posicionándolo en torno a un 10\% de la parte superior de la imagen con el objetivo que se vea la cara de la persona. se probó también la manera fácil que es centrar verticalmente la persona en la imagen, pero puede ocurrir que solo se tenga una parte de la persona y esté centrado. como se puede ver en las imágenes \ref{fig:real1} y \ref{fig:real2} en ambos casos el centro del cuadrado está muy próximo al centro vertical de la imagen, pero no por ello estar bien.
+En el caso de la velocidad vertical se ha decidido usar como referencia la posición superior del \textit{bounding box} posicionándolo en torno a un 10\% de la parte superior de la imagen con el objetivo que se vea la cara de la persona. Se probó también la manera fácil, que es centrar verticalmente la persona en la imagen, pero puede ocurrir que solo se tenga una parte de la persona  en la imagen y esté centrado, como se puede ver en las imágenes \ref{fig:real1} y \ref{fig:real2}. En ambos casos el centro del rectángulo está muy próximo al centro vertical de la imagen, pero no por ello está bien.
 
 \begin{figure}[!htb]
 \minipage{0.45\textwidth}
@@ -165,62 +169,75 @@ En el caso de la velocidad vertical se ha decidido usar como referencia la posic
 \endminipage\hfill
 \end{figure}
 
-En cambio tomando como referencia el punto más alto del cuadrado se tiende a obtener la imagen \ref{fig:real1} que además facilita la detección de la persona.
-Las constantes \textbf{proporcional y derivativa} en este caso son \textbf{3 y 0.5} respectivamente. Hay que destacar además que en el caso de tener error por estar muy cerca del borde superior de la imagen se ha sumado 0.3 a dicho error para evitar que considere el borde  superior de la imagen como valor aceptable. 
+En cambio tomando como referencia el punto más alto del cuadrado se tiende a obtener la imagen \ref{fig:real1}, lo que además facilita la detección de la persona.
+Las constantes \textbf{proporcional y derivativa} en este caso son \textbf{3 y 0.5} respectivamente ajustadas de modo experimental. Hay que destacar además que en el caso de tener error por estar muy cerca del borde superior de la imagen se ha sumado 0.3 a dicho error para evitar que considere el borde  superior de la imagen como valor aceptable. 
 
 
 \section{Validación experimental}
-La validación experimental del desarrollo se ha hecho en 4 casos, uno por cada \textit{PID} y el conjunto. En todos los casos el bucle de control funciona a 7 \acrshort{fps}.
+La validación experimental del desarrollo del software realizado se ha hecho en 4 casos, tres tests unitarios, uno por cada \textit{PID} y un test global con los tres controladores integrados y funcionando en conjunto. En todos los casos el bucle de control funciona a 7 \acrshort{fps}.
 
-\subsection*{Control de giro horizontal}
-Esta prueba consiste en moverse de izquierda a derecha delante del drone para ajustar las constantes del \textit{PID} de giro horizontal.
+\subsection{Control de giro horizontal}
+Esta prueba consiste en moverse de izquierda a derecha delante del drone para ajustar las constantes del \textit{PID} de giro horizontal (Figura \ref{fig:real_giro}).
+
+\begin{figure}[!htb]
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/giroR_1.png}
+\endminipage\hfill
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/giroR_2.png}
+\endminipage\hfill
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/giroR_3.png}
+\endminipage\hfill
+\caption{Ejemplo de giro horizontal en drone real}
+\label{fig:real_giro}
+\end{figure}
+\subsection{Control de elevación}
+Esta prueba consiste en agacharse y levantarse delante del drone para ajustar las constantes del \textit{PID} de elevación (Figura \ref{fig:real_elev}).
+
+\begin{figure}[!htb]
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/elevacion_1.png}
+\endminipage\hfill
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/elevacion_2.png}
+\endminipage\hfill
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/elevacion_3.png}
+\endminipage\hfill
+\caption{Ejemplo de control de elevación en drone real}
+\label{fig:real_elev}
+\end{figure}
+\subsection{Control de avance}
+Esta prueba consiste en avanzar y retroceder delante del drone para ajustar las constantes del \textit{PID} de avance (Figura \ref{fig:real_avance}).
+
+\begin{figure}[!htb]
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/avanceR_1.png}
+\endminipage\hfill
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/avanceR_2.png}
+\endminipage\hfill
+\minipage{0.3\textwidth}
+    \includegraphics[width=\linewidth]{figures/real/avanceR_3.png}
+\endminipage\hfill
+\caption{Ejemplo de avance en drone real}
+\label{fig:real_avance}
+\end{figure}
+\subsection{Ejecución típica completa}
+Esta prueba consiste en moverse por la habitación para comprobar si el comportamiento conjunto es el correcto (Figura \ref{fig:real_com}). De no serlo, toca ajustar las constantes oportunas.
 
 \begin{figure}[!htb]
 \minipage{0.45\textwidth}
-    \includegraphics[width=\linewidth]{figures/real/cap1.png}
-    \caption{Persona seleccionada}\label{fig:real1}
+    \includegraphics[width=\linewidth]{figures/real/comR_1.png}
 \endminipage\hfill
 \minipage{0.45\textwidth}
-    \includegraphics[width=\linewidth]{figures/real/cap2.png}
-    \caption{Torso detectado}\label{fig:real2}
+    \includegraphics[width=\linewidth]{figures/real/comR_3.png}
 \endminipage\hfill
+\centering
+\includegraphics[width=0.45\linewidth]{figures/real/comR_2.png}\hfill
+\caption{Ejemplo de ejecución típica en drone real}
+\label{fig:real_com}
 \end{figure}
-\subsection*{Control de elevación}
-Esta prueba consiste en agacharse y levantarse delante del drone para ajustar las constantes del \textit{PID} de elevación.
 
-\begin{figure}[!htb]
-\minipage{0.45\textwidth}
-    \includegraphics[width=\linewidth]{figures/real/cap1.png}
-    \caption{Persona seleccionada}\label{fig:real1}
-\endminipage\hfill
-\minipage{0.45\textwidth}
-    \includegraphics[width=\linewidth]{figures/real/cap2.png}
-    \caption{Torso detectado}\label{fig:real2}
-\endminipage\hfill
-\end{figure}
-\subsection*{Control de avance}
-Esta prueba consiste en avanzar y retroceder delante del drone para ajustar las constantes del \textit{PID} de avance.
-
-\begin{figure}[!htb]
-\minipage{0.45\textwidth}
-    \includegraphics[width=\linewidth]{figures/real/cap1.png}
-    \caption{Persona seleccionada}\label{fig:real1}
-\endminipage\hfill
-\minipage{0.45\textwidth}
-    \includegraphics[width=\linewidth]{figures/real/cap2.png}
-    \caption{Torso detectado}\label{fig:real2}
-\endminipage\hfill
-\end{figure}
-\subsection*{Ejecución típica completa}
-Esta prueba consiste en moverse por la habitación para comprobar si el comportamiento conjunto es el correcto. De no serlo, toca ajustar las constantes oportunas.
-
-\begin{figure}[!htb]
-\minipage{0.45\textwidth}
-    \includegraphics[width=\linewidth]{figures/real/cap1.png}
-    \caption{Persona seleccionada}\label{fig:real1}
-\endminipage\hfill
-\minipage{0.45\textwidth}
-    \includegraphics[width=\linewidth]{figures/real/cap2.png}
-    \caption{Torso detectado}\label{fig:real2}
-\endminipage\hfill
-\end{figure}
+En el vídeo se ilustra que el comportamiento deseado del drone real siguiendo a una persona que se mueve de modo natural se ha conseguido satisfactoriamente una vez ajustados los tres controladores PID.
