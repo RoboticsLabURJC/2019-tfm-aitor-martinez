@@ -1,19 +1,19 @@
 \chapter{Herramientas utilizadas}\label{cap.herramientas}
-EL objetivo de este trabajo es preparar la infraestructura para desarrollar prácticas de visión con drones en la plataforma Kibotics\cite{kibotics} tanto con drone real como simulado. Para ello se han necesitado las siguientes herramientas.
+EL objetivo de este trabajo es preparar la infraestructura para desarrollar prácticas de visión con drones en la plataforma Kibotics\cite{kibotics} tanto con drone real como simulado. Para ello se han necesitado las siguientes herramientas software.
 
-\section{Kibotics}
-\textit{Kibotics}~\cite{kibotics} es una plataforma de enseñanza de robótica infantil desarrollada por las Asociación de robótica JdeRobot\footnote{https://jderobot.github.io}
+\section{Plataforma educativa Kibotics}
+\textit{Kibotics}~\cite{kibotics} es una plataforma web de enseñanza de robótica infantil desarrollada por las Asociación de robótica e \acrfull{ia} JdeRobot\footnote{https://jderobot.github.io}
 
-La batería de ejercicios(figura \ref{fig:kibotics2}) que incluye el entorno \textit{Kibotics}~\cite{kibotics} se simula usando el simulador robótico \textit{Websim}. Se trata de un simulador diseñado para el aprendizaje de conceptos básicos de programación de robots especialmente para niños. 
+La batería de ejercicios (Figura \ref{fig:kibotics2}) que incluye el entorno \textit{Kibotics}~\cite{kibotics} se realiza usando el simulador robótico \textit{Websim}. Se trata de un simulador diseñado para el aprendizaje de conceptos básicos de programación de robots especialmente para niños y funciona íntegramente dentro de  un navegador. 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=0.6\textwidth]{figures/herramientas/kibotics2.png}
+    \includegraphics[width=0.8\textwidth]{figures/herramientas/kibotics2.png}
 		\caption{Ejercicios Kibotics}
 		\label{fig:kibotics2}
 		\end{center}
 \end{figure}
 
-El simulador permite que los usuarios puedan programar fácilmente los movimientos de los robots, ya que simplemente tienen que acceder a la información que recogen sus sensores y enviar las órdenes precisas a los actuadores del robot. Estas ordenes se deben programar, en \textit{Python} o \textit{Scratch} (figura \ref{fig:kibotics1}), dentro del editor que incorpora la interfaz de \textit{Websim}.
+Este simulador permite que los usuarios puedan programar fácilmente los movimientos de los robots, ya que simplemente tienen que acceder a la información que recogen sus sensores y enviar las órdenes precisas a los actuadores del robot. Estas órdenes se deben programar en \textit{Python} o \textit{Scratch} (figura \ref{fig:kibotics1}), dentro del editor que incorpora la interfaz de \textit{Websim}.
 \begin{figure}[H]
   \begin{center}
     \includegraphics[width=0.6\textwidth]{figures/herramientas/kibotics1.png}
@@ -21,34 +21,35 @@ El simulador permite que los usuarios puedan programar fácilmente los movimient
 		\label{fig:kibotics1}
 		\end{center}
 \end{figure}
+Tanto en la versión simulada como en la real, el \acrshort{api} proporcionado por la plataforma para interactuar con el robot contiene una función \textit{getImage} que devuelve una captura de la cámara de dicho robot en formato RGB. Además contiene una pequeña aproximación al mundo de la \acrfull{va} con la función de su \acrshort{api} \textit{GetColoredObject}, que recibe un color en RGB y consiste en un pequeño filtro de color aplicado sobre la imagen y que devuelve a los niños la el \textbf{bounding box} del objeto de color indicado.
 
 Se ha usado para la parte simulada.
 
-\section{Tensorflow}
-Es una plataforma de código abierto \textit{end-to-end} para el \textit{Machine Learning} que fue liberada bajo licencia de \textit{Apache} 2 a finales de 2015 y que está disponible en github~\cite{github_tensorflow}. Fue desarrollada por el equipo de investigación en \textit{Machine Learning “Google Brain”}  en \textit{C++} y \textit{Python} y es usada en multitud de productos y servicios de Google como Gmail o \textit{Google Translation}. Google ofrece en su plataforma \textit{Cloud} ejecutar \textit{Tensorflow} en \textit{Tensor Processing Unit} (TPU), un nuevo tipo de procesadores en \textit{Cloud} optimizados para ejecutar \acrfull{ia}.  \textit{TensorFlow} está orientado a problemas de \textit{Deep Learning} y permite entrenar y construir redes neuronales. 
+\section{Tensorflow y TensorflowJS}
+Es una herramienta y biblioteca de código abierto \textit{end-to-end} para el \textit{Machine Learning} que fue liberada bajo licencia de \textit{Apache} 2 a finales de 2015 y que está disponible en github~\cite{github_tensorflow}. Fue desarrollada por el equipo de investigación en \textit{Machine Learning “Google Brain”}  en \textit{C++} y \textit{Python} y es usada en multitud de productos y servicios de Google como Gmail o \textit{Google Translation}. Google ofrece en su plataforma \textit{Cloud} ejecutar \textit{Tensorflow} en \textit{Tensor Processing Unit} (TPU), un nuevo tipo de procesadores en \textit{Cloud} optimizados para ejecutar \acrfull{ia}.  \textit{TensorFlow} está orientado a problemas de \textit{Deep Learning} y permite entrenar y construir redes neuronales. 
 
-\textit{TensorFlow} puede correr tanto en CPUs como en GPUs (haciendo uso de \textit{\acrfull{cuda}}). Está disponible en \textit{Linux} de 64 bits, \textit{MacOS}, y plataformas móviles que incluyen \textit{Android} e \textit{iOS}, además ha incluido soporte para \textit{Javascript}, por lo que puede ser usado en cualquier navegador. Actualmente es el entorno más popular en \textit{Deep Learning}.
+\textit{TensorFlow} puede correr tanto en CPUs como en GPUs (haciendo uso de \textit{\acrfull{cuda}}). Está disponible en \textit{Linux} de 64 bits, \textit{MacOS}, y plataformas móviles que incluyen \textit{Android} e \textit{iOS}. Además ha incluido soporte para \textit{Javascript}, por lo que puede ser usado en cualquier navegador. Actualmente es el entorno más popular en \textit{Deep Learning}.
 
 Puede ejecutar de forma rápida y eficiente gráficos de flujo. Un gráfico de flujo está formado por operaciones matemáticas representadas sobre nodos, y cuya entrada y salida es un vector multidimensional o tensor de datos, por este motivo recibe el nombre de \textit{TensorFlow}.
 
-Las ventajas de este software se extienden a muchas disciplinas a parte de la tecnología TIC. Se emplea en imágenes médicas para la detección de tumores por ejemplo, también se usa en la detección y combinación de estilos artísticos en la pintura, etc.
+Las ventajas de este software se extienden a muchas disciplinas aparte de la tecnología TIC. Se emplea en imágenes médicas para la detección de tumores por ejemplo, también se usa en la detección y combinación de estilos artísticos en la pintura, etc.
 
-En este \acrshort{tfm} se emplean la versión 1.15.0 y 2.2.0 de \textit{Tensorflow} para \textit{Python} y la versión 2.0.1 para \textit{Javascript}.
+En este \acrshort{tfm} se emplean la versión 1.15.0 y 2.2.0 de \textit{Tensorflow} para \textit{Python}, que se emplea en el drone real y la versión 2.0.1 para \textit{Javascript}, empleada con el drone simulado.
 \subsection{Object Detection API}
 \textit{Object Detection \acrshort{api}} \footnote{\url{https://github.com/tensorflow/models/tree/master/research/object_detection}} es un \textit{framework} de código abierto construido sobre \textit{TensorFlow} que facilita la construcción, el entrenamiento y el despliegue de modelos de detección de objetos desarrollado por \textit{Google}. Todas las redes de detección preentrenadas que se pueden descargar desde la web de \textit{Tensorflow} han sido entrenadas con este \acrshort{api}.
 
 Hasta Julio de 2020, cuando publicaron la primera versión con soporte para \textit{Tensorflow} 2.x, solo tenía solo soporte para la versión 1.x.
+En este trabajo se ha usado la versión 2.2.1 de \textit{Object Detection API}.
+\section{Biblioteca Opencv}
+\textit{OpenCV} \footnote{https://opencv.org/} es una librería de código abierto desarrollada por \textit{Intel} y publicada  bajo licenciade BSD. Esta librería implementa gran variedad de fuciones para la interpretación de la imagen. Sus  siglas  provienen  de  los  términos anglosajones ``\textit{Open Source Computer  Vision Library}", y tal y como se puede , es una librería destinada a aplicaciones de visión por computador en tiempo real. Puede ser empleada en MacOS, Windows y Linux, y existen versiones para \textit{C\#}, \textit{Python} y \textit{Java}, a pesar de que originalmente era una librería en \textit{C/C++}. Además hay interfaces para \textit{Ruby}, \textit{Python}, \textit{Matlab} y otros lenguajes.
 
-\section{Opencv}
-\textit{OpenCV} \footnote{https://opencv.org/} es una librería de código abierto desarrollada por \textit{Intel} y publicada  bajo licenciade BSD. Esta librería implementa gran variedad de herramientas para la interpretación de la imagen. Sus  siglas  provienen  de  los  términos anglosajones ``\textit{Open Source Computer  Vision Library}", y tal y como se puede deducir es una librería destinada a aplicaciones de visión por computador en tiempo real. Puede ser empleada en MacOS, Windows y Linux, y existen versiones para \textit{C\#}, \textit{Python} y \textit{Java}, a pesar de que originalmente era una librería en \textit{C/C++}. Además hay interfaces para \textit{Ruby}, \textit{Python}, \textit{Matlab} y otros lenguajes.
-
-En 2017 añadieron \textbf{soporte para \textit{Javascript}} mediante \textit{emscripten}\footnote{https://emscripten.org} que es un software que permite convertir bibliotecas escritas en \textit{C++} en binarios para \textit{Javascript}. Esto permite tener muchas de las funcionalidades desarrolladas en \textit{C++} en el navegador.
+En 2017 añadieron \textit{soporte para Javascript} mediante \textit{emscripten}\footnote{https://emscripten.org} que es un software que permite convertir bibliotecas escritas en \textit{C++} en binarios para \textit{Javascript} (\textit{OpenCVJS}). Esto permite tener muchas de las funcionalidades desarrolladas en \textit{C++} en el navegador.
 
 \textit{OpenCV} implementa algoritmos para técnicas de calibración, detección de rasgos, rastreo, análisis de la forma, análisis del movimiento, reconstrucción 3D, segmentación de objetos y reconocimiento, etc. Los algoritmos se basan  en  estructuras de datos flexibles acopladas con estructuras IPL (\textit{Intel  Image Processing Library}), aprovechándose de la arquitectura de Intel en la optimización de más de la mitad de las funciones. Incorpora funciones básicas para modelar el fondo, sustraer dicho  fondo y generar imágenes de movimiento MHI  (\textit{Motion  History  Images}).  Además  incluye  funciones para determinar dónde hubo movimiento y en qué dirección. 
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=0.6\textwidth]{figures/herramientas/opencv.png}
+    \includegraphics[width=0.8\textwidth]{figures/herramientas/opencv.png}
 		\caption{Funciones de OpenCV}
 		\label{fig.opencv}
 		\end{center}
@@ -60,20 +61,20 @@ Desde su aparición \textit{OpenCV} ha sido usado en numerosas aplicaciones. Ent
 
 Hay  una  gran  cantidad  de  empresas    y  centros  de  investigación  que  emplean  estas técnicas como IBM, Microsoft, Intel, SONY, Siemens, Google, Stanford, MIT, CMU, Cambridge e INRIA.
 
-En este proyecto se hace uso de la versión \textit{OpenCV} 4.2 de \textit{Python} y 3.3.1 de \textit{Javascript}.
+En este proyecto se hace uso de la versión \textit{OpenCV} 4.2 de \textit{Python} para el drone real y 3.3.1 de \textit{OpenCVJS} para el drone simulado.
 \section{Google Colaboratory}
-\textit{Google Colaboratory o colab}\footnote{\url{https://colab.research.google.com}} (figura \ref{fig:colab})  es un servicio de \textit{Google} que permite ejecutar código \textit{Python} desde el navegador basándose en la tecnología \textit{Jupyter notebook}\footnote{\url{https://jupyter.org}}. En el servidor hay un interprete de \textit{Python} que recibe el código que se escribe en el navegador y devuelve el resultado para mostrarlo en su celda correspondiente.
+\textit{Google Colaboratory o colab}\footnote{\url{https://colab.research.google.com}} (figura \ref{fig:colab})  es un servicio de \textit{Google} que permite ejecutar código \textit{Python} desde el navegador basándose en la tecnología \textit{Jupyter notebook}\footnote{\url{https://jupyter.org}}. En el servidor hay un intérprete de \textit{Python} que recibe el código que se escribe en el navegador y devuelve el resultado para mostrarlo en su celda correspondiente.
 
-La mayor ventaja de este servicio con respecto a ejecutar el propio código en local es que se tiene acceso tanto a \textit{GPUs} como a \textit{TPUs} proporcionadas por \textit{Google}, es decir, se pueden hacer cálculos muy costosos computacionalmente en ordenadores básicos.
+La mayor ventaja de este servicio con respecto a ejecutar el propio código en local es que se tiene acceso tanto a \textit{GPUs} como a \textit{TPUs} proporcionadas por \textit{Google}, es decir, se pueden hacer cálculos muy costosos computacionalmente desde ordenadores básicos.
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[width=0.6\textwidth]{figures/herramientas/colab.png}
+    \includegraphics[width=0.8\textwidth]{figures/herramientas/colab.png}
 		\caption{Google colab}
 		\label{fig:colab}
 		\end{center}
 \end{figure}
-\section{DJI Tello}
+\section{Drone DJI Tello}
 Es un pequeño drone (figura \ref{fig:tello}) fabricado por la empresa DJI \footnote{\url{https://www.dji.com/es}}. Tiene las ventajas de ser programable mediante un \acrshort{api} además de tener un precio muy razonable, en torno a 100€, lo que le permite ser una muy buena opción de cara a la enseñanza.
 \begin{figure}[H]
   \begin{center}
@@ -82,6 +83,11 @@ Es un pequeño drone (figura \ref{fig:tello}) fabricado por la empresa DJI \foot
 		\label{fig:tello}
 		\end{center}
 \end{figure}
+Este drone tiene una cámara frontal y crea una red \textit{WiFi} para poder interactuar con él. Todo el procesado de imágenes no se realiza a bordo, sino, en el ordenador al cual está conectado. Tiene una segunda inferior que se usa para estabilización visual y que permite realizar movimientos precisos en distancia y rotación.
+
+Además es muy pequeño (9.8 x 9.2 x 4,1 cm) y como se puede ver en la figura \ref{fig:tello} tiene protecciones en las hélices de plástico frente a choques y si por casualidad reciben un choque saltan del drone para evitar problemas. Todas estas cosas lo hacen adecuado para niños.
+
+Se ha usado para programar el seguimiento de una persona real.
 \section{Mixamo}\label{sec:mixamo}
 \textit{Mixamo}~\cite{mixamo} es una empresa del grupo \textit{Adobe Systems} que desarrolla y vende servicios basados en la web para la animación de personajes en 3D. Utilizan métodos de \textit{Machine Learning} para automatizar los pasos del proceso de animación de personajes, incluyendo desde el modelado 3D hasta la animación 3D. Desde su web ofrecen modelos y animaciones gratuitos (\ref{fig.mixamo}).
 \begin{figure}[H]
@@ -92,7 +98,7 @@ Es un pequeño drone (figura \ref{fig:tello}) fabricado por la empresa DJI \foot
 		\end{center}
 \end{figure}
 En este proyecto se ha usado para obtener los modelos de las personas para la versión simulada.
-\section{Blender} \label{sec:blender}
+\section{Herramienta Blender} \label{sec:blender}
 \textit{Blender}\footnote{\url{https://www.blender.org}} (figura \ref{fig:blender}) es un programa dedicado especialmente al modelado, iluminación, renderizado, animación y creación de gráficos tridimensionales.
 
 Inicialmente fue distribuido de forma gratuita pero sin el código fuente. Posteriormente pasó a ser software libre. Actualmente es compatible con todas las versiones de Windows, macOS, GNU/Linux (incluyendo Android), Solaris, FreeBSD e IRIX.
@@ -103,9 +109,9 @@ Inicialmente fue distribuido de forma gratuita pero sin el código fuente. Poste
 		\label{fig:blender}
 		\end{center}
 \end{figure}
-En este \acrshort{tfm} se ha usado para modificar los modelos extraídos de \textit{Mixamo}
+En este \acrshort{tfm} se ha usado para modificar los modelos extraídos de \textit{Mixamo} y hacerlos más compactos.
 \section{LabelMe}
-\textit{LabelMe}~\cite{labelme} es un proyecto creado por el Laboratorio de Ciencias de la Computación e Inteligencia Artificial del MIT (CSAIL) que proporciona un conjunto de datos de imágenes digitales con anotaciones. Además también tiene una herramienta de etiquetado\ref{fig:labelme} de \textit{datasets} que permite subir tu propio \textit{dataset} a un servidor para poder etiquetar cada imagen desde el navegador.
+\textit{LabelMe}~\cite{labelme} es un proyecto creado por el Laboratorio de Ciencias de la Computación e Inteligencia Artificial del MIT (CSAIL) que proporciona un conjunto de datos de imágenes digitales con anotaciones. Además también tiene una herramienta de etiquetado (Figura \ref{fig:labelme}) de \textit{datasets} que permite subir tu propio \textit{dataset} a un servidor para poder etiquetar cada imagen desde el navegador.
 \begin{figure}[H]
   \begin{center}
     \includegraphics[width=0.6\textwidth]{figures/herramientas/labelme.png}

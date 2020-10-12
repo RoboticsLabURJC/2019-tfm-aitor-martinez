@@ -1,20 +1,20 @@
 \chapter{Conclusiones}\label{cap.conclusiones}
 Una vez documentado el software diseñado y desarrollado a lo largo de este \acrshort{tfm} y la funcionalidad que ofrece, se dedica este capítulo a la comprobación de los objetivos alcanzados, así como a la explicación de los conocimientos adquiridos y una breve exposición de posibles mejoras y de las líneas de actuación futuras.
 \section{Conclusiones}
-El objetivo principal, que era la creación de la arquitectura necesaria para añadir procesamiento visual complejo de manera sencilla de usar se ha cumplido, ahora ya se podrían desarrollar practicas tanto con drone simulado como real de detección de personas.
+El objetivo principal, que era la creación de la infraestructura necesaria para añadir procesamiento visual complejo, de manera sencilla de usar, se ha cumplido, ahora ya se pueden desarrollar prácticas tanto con drone simulado como real de detección robusta de personas.
 \newline
 
-En cuanto a los subobjetivos, también se ha conseguido un \textit{siguePersona} visual real gracias al uso de \textit{Tensorflow} y \textit{Opencv} para detectar a la persona y el uso de varios controladores PID para las velocidades. Para lograr este subobjetivo se ha necesitado crear clases de \textit{Python} para contener las las redes y permitir un nivel de abstracción mayor además de para simplificar su uso mediante métodos personalizados como \textit{getPerson}.
+En cuanto a los subobjetivos concretos, se ha conseguido un comportamiento robótico \textit{siguePersona} visual real gracias al uso de \textit{Tensorflow} y \textit{Opencv} para detectar a la persona y el uso de varios controladores PID para las velocidades. Para lograr este subobjetivo se han creado clases de \textit{Python} para contener las las redes y permitir un nivel de abstracción mayor además de simplificar su uso mediante métodos personalizados como \textit{getPerson() en \textit{Python}}. Igualmente se ha mejorado el driver de Python del drone real DJI Tello, que permite control en velocidad y un envío más rápido y fiable de comandos desde el ordenador al propio drone volador.
 \newline
 
-También se ha cumplido el subobjetivo \textit{siguePersona} visual simulado, teniendo que crear un mundo que se adaptara a la necesidades y creando clases de \textit{Javascript} para contener las las redes y permitir un nivel de abstracción mayor además de para simplificar su uso mediante métodos personalizados como \textit{getPerson}. Además para este objetivo se ha necesitado crear un \textit{dataset} y reentrenar una red de detección.
+También se ha cumplido el subobjetivo del comportamiento \textit{siguePersona} visual simulado, teniendo que crear un mundo que se adaptara a la necesidades y creando clases de \textit{Javascript} para contener las las redes y permitir un nivel de abstracción mayor además de para simplificar su uso mediante el método \textit{getPerson} en \textit{JavaScript}. Además, para este subobjetivo se ha necesitado crear un \textit{dataset} específico de 4000 imágenes y reentrenar una red de detección visual puesto que la red preentrenada disponible no funcionaba satisfactoriamente. Se ha utilizado TensorlfowJS de modo que la inferencia neuronal ejecuta en el navegador web en tiempo real.
 \newline
 
-De manera personal, también se ha alcanzado el objetivo de mejorar en conocimientos en el campo del desarrollo web y el modelado 3D. Gracias a ello se han adquirido conocimientos en tecnologías web de procesado de imagen que en un principio creía que era inviable por la necesidad de recursos que tiene y las limitaciones propias del interprete de \textit{Javascript}.
+De manera personal, también se ha alcanzado el objetivo de mejorar en conocimientos en el campo del desarrollo web y el modelado 3D. Gracias a ello se han adquirido conocimientos en tecnologías web de procesado de imagen como \textit{OpenCVJS} y \textit{TensorflowJS }que en un principio creía que era inviable por la necesidad de recursos que tiene y las limitaciones propias del intérprete de \textit{JavasScript}.
 \section{Trabajos futuros}
-Las contribuciones de este \acrshort{tfm} han abierto las posibilidades para desarrollar nuevas prácticas de la plataforma \textit{Kibotics}. Pero esto es solo el principio, algunas mejoras pueden ser:
+Las contribuciones de este \acrshort{tfm} han abierto las posibilidades para desarrollar nuevas prácticas utilizando visión de manera sencilla de la plataforma \textit{Kibotics} manteniendo la reobusted habitual de las redes neuronales. Pero esto es solo el principio, algunas mejoras pueden ser:
 
 \begin{itemize}
-  \item \textbf{Creación de prácticas que utilicen esta tecnología}. Se ha asentado la base, pero ahora toca desarrollar prácticas se seguimiento de personas.
-  \item \textbf{Aumentar el numero de opciones en cuanto a detección}, como por ejemplo un sigue persona que detecte caras para poder seguir a una persona en un grupo
+  \item \textbf{Creación de prácticas que utilicen esta tecnología}. Se ha asentado la base, pero ahora toca desarrollar nuevas prácticas de seguimiento de personas o de otros objetos como señales de tráfico, semáforos, etc.
+  \item \textbf{Aumentar el número de opciones en cuanto a detección}, como por ejemplo un sigue persona que detecte caras para poder seguir a una persona concreta en un grupo
 \end{itemize}
