@@ -12,7 +12,7 @@ import signal
 import config_with_yaml as config
 
 from camera import getCamera
-from networks import TrackingNetwork
+from networks import DetectionNetwork
 import cv2
 import numpy as np
 from datetime import datetime
@@ -98,33 +98,37 @@ if __name__ == '__main__':
     network_model = cfg.getPropertyWithDefault("Network.Model",'')
     label_map_file = cfg.getPropertyWithDefault("Network.Labels",'')
     net_type = cfg.getPropertyWithDefault("Network.Type",'')
+    net_thres = cfg.getPropertyWithDefault("Network.Threshold", 0.5)
     
 
     # # The camera does not need a dedicated thread, the callbacks have their owns.
     # cam = getCamera("project.mp4", "video")
     cam = getCamera(drone.drone, "Tello")
-    network = TrackingNetwork(network_model,label_map_file, net_type, True)
-    network.setCamera(cam)
+    network = DetectionNetwork(network_model,label_map_file, net_type, net_thres, True)
     display_imgs = cfg.getPropertyWithDefault("show_imgs",False)
 
     print(drone.bateria_restante())
     drone.despegar()
 
+    n_it = 0
+    n_found = 0
+    mean_score = 0
     while True:
-
         # Make an inference on the current image
-        # start_time = datetime.now()
-        (predictions, boxes, scores) = network.predict()
-        img = cam.get_rgb_image() 
+        start_time = datetime.now()
+        img = cam.get_rgb_image()
+        (predictions, boxes, scores) = network.getPerson(img)
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        # elapsed = datetime.now() - start_time
-        # print "elapsed {} ms. Framerate: {} fps".format(elapsed.microseconds/1000.0, 1e6/elapsed.microseconds)
+        
         # print ("inference output", predictions, boxes, scores)
         if (len(boxes) > 0):
+            n_found+=1
+            mean_score = (mean_score * (n_found-1) + scores[0])/n_found
             (velx, vely, velz, velw) = calculate_vels(boxes[0], img.shape)
             drone.movimiento_libre(velx, vely, velz, velw)
 
-
+        elapsed = datetime.now() - start_time
+        print ("elapsed {} ms. Framerate: {} fps".format(elapsed.microseconds/1000.0, 1e6/elapsed.microseconds))
         # Draw every detected person
         if display_imgs:
             for idx, person in enumerate(boxes):
@@ -133,7 +137,8 @@ if __name__ == '__main__':
             cv2.imshow("RGB", img)
             if cv2.waitKey(1) == 27:
                 break
-
+        n_it+=1
+        print ("score: {}%, found: {}%".format(mean_score*100, n_found*100/n_it))
         # time.sleep(5)
 
     drone.aterrizar()

@@ -48,8 +48,8 @@ if __name__ == '__main__':
 
         # Make an inference on the current image
         #start_time = datetime.now()
-        (predictions, boxes, scores) = network.predict()
         img = cam.get_rgb_image()
+        (predictions, boxes, scores) = network.predict(img)
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         #elapsed = datetime.now() - start_time
         #print "elapsed {} ms. Framerate: {} fps".format(elapsed.microseconds/1000.0, 1e6/elapsed.microseconds)

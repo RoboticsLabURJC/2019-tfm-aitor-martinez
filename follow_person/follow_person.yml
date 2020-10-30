@@ -2,5 +2,7 @@ show_imgs: True
 
 Network:
   Model: ./nets/ssd_mobilenet_v2_coco17
+  # Model: ./nets/centernet_resnet50_v1_fpn_512
+  # Model: ./nets/ssd_resnet50_v1_fpn_640
   Labels: labels/mscoco_label_map.pbtxt
   Type: saved_model
